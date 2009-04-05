@@ -7,7 +7,7 @@
 
 ; Functions to build and interrogate triangles.
 (ns triangle
-	(:require vec))
+	(:use vec))
 
 (defstruct 
 	#^{:doc "A triangle is three vertices with some other properties"}
@@ -22,7 +22,7 @@
 	:area			; Float
 )
 
-(defn parse [string] (map vec/create (re-seq #"\(.*?\)" string)))
+(defn read-triangle [string] (map read-vec (re-seq #"\(.*?\)" string)))
 
 (defn create
 	"Creates a new triangle from a string of 5 3-tuples.
@@ -30,19 +30,19 @@
 	and the last the emitivity vector."
 	
 	[string]
-	(let [  [v0 v1 v2 reflect emit] (parse string) 
-			edge0	(vec/sub v1 v0)
-			edge1	(vec/sub v2 v1)
-			edge3	(vec/sub v2 v0)
-			tangent	(vec/normalise edge0)
-			normal	(vec/normalise (vec/cross tangent edge1))
-			pa2		(vec/cross edge0 edge1)
-			area	(/ (vec/norm pa2) 2) ]
+	(let [  [v0 v1 v2 reflect emit] (read-triangle string) 
+			edge0	(sub v1 v0)
+			edge1	(sub v2 v1)
+			edge3	(sub v2 v0)
+			tangent	(normalise edge0)
+			normal	(normalise (cross tangent edge1))
+			pa2		(cross edge0 edge1)
+			area	(/ (norm pa2) 2) ]
 			
 		(struct triangle
 			[v0 v1 v2] edge0 edge3
-			(vec/clamp 0 (- 1 Float/MIN_VALUE) reflect) 
-			(vec/clamp 0 Float/MAX_VALUE emit)
+			(clamp 0 (- 1 Float/MIN_VALUE) reflect) 
+			(clamp 0 Float/MAX_VALUE emit)
 			tangent normal area)))
 
 ; FIXME: This could be more efficient by only looping through vertices once.
@@ -72,19 +72,19 @@
 	[tri ray0 rayd]
 	(let [	e0 (:edge0 tri)
 			e3 (:edge3 tri)
-			invdet (vec/invdet e0 rayd e3)
+			invdet (invdet e0 rayd e3)
 		 ]
 		(if (number? invdet)
 			(let [	v0 (first (:vertices tri))
-					tv (vec/sub ray0 v0)
-					u  (* (vec/dot v0 tv) invdet)
+					tv (sub ray0 v0)
+					u  (* (dot v0 tv) invdet)
 			]
 			(if (and (>= u 0) (<= u 1))
-				(let [	q (vec/cross tv e0)
-						v (* (vec/dot rayd q) invdet)
+				(let [	q (cross tv e0)
+						v (* (dot rayd q) invdet)
 				]
 				(if (and (>= v 0) (<= (+ u v) 1))
-					(let [t (* (vec/dot e3 q) invdet)]
+					(let [t (* (dot e3 q) invdet)]
 						(if (>= t 0) t))
 				))
 			))
@@ -93,7 +93,7 @@
 
 (def rnd (java.util.Random.))
 (defn sample-point
-	"Sample a random point as a vector from inside the given triange."
+	"Sample a random point as a vector from inside the given triangle."
 	
 	[tri]
 	(let [ 	sqr1 (Math/sqrt (.nextFloat rnd))
@@ -104,5 +104,5 @@
 			e0	 (:edge0 tri)
 			e3	 (:edge3 tri)
 	]
-	(vec/add (vec/add (vec/scale a e0) (vec/scale b e3)) v0)
+	(add (add (scale a e0) (scale b e3)) v0)
 	))
