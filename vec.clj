@@ -5,63 +5,67 @@
 ;; <http://www.hxa7241.org/>
 ;; ---------------------------------------------------------------------------- 
 
-;; Defines functions for working with geometrical vectors.
+;; --- vec.clj ---
+;; A simple vector package that defines functions for working with geometrical 
+;; vectors.
 (ns vec)
 
-(defn read-vec
-	"Construct a new vector from a string of the form (<float> <float> <float>)"
-	[instr]
-	(map read-string
-		(drop 1 (re-matches #"\((.*)\s(.*)\s(.*)\)" instr))))
+; Constants
+(def origin [0 0 0])    ; Zero vector in 3D
+(def epsilon 0.000001)  ; Tolerance for equality
 
-(def origin [0 0 0])
-(defn origin? [vector] (every? zero? vector))
-
-; Binary operators
-(defn dot [v1 v2] (reduce + (map * v1 v2)))
-(defn add [v1 v2] (map + v1 v2))
-(defn sub [v1 v2] (map - v1 v2))
-(defn cross
-	"Computes the cross product of v1 and v2. Assumes they are of length 3."
-	[v1 v2] 
-	[ 
-		(- (* (v1 1) (v2 2)) (* (v1 2) (v2 1)))
-		(- (* (v1 2) (v2 0)) (* (v1 0) (v2 2)))
-		(- (* (v1 0) (v2 1)) (* (v1 1) (v2 0)))
-	])
-
-; Scalar operators
-(defn scale [m v] (map #(* m %) v))
-
-; Unary operators
-(defn norm [v] (Math/sqrt (dot v v)))
-(defn normalise [v] (scale (/ 1 (norm v)) v))
-
-(defn det
-	"Compute the determinant of vectors v1 v2 and v3 using
-	det = v1.(v2 x v3)."
-	
-	[v1 v2 v3]
-	(dot v1 (cross v2 v3)))
-
-(def epsilon 0.000001)
-(defn approx-0 [x] (< (Math/abs x) epsilon))
-(defn approx= [v1 v2] (every? approx-0 (sub v1 v2)))
-
-(defn invdet
-	"Compute the inverse determinant of three vectors as 
-	Returns nil if the det. is too close to 0"
-
-	[v1 v2 v3]
-	(let [d (det v1 v2 v3)]
-		(if (approx-0 d)
-			nil
-			(/ 1.0 d))))
-
-(defn clamper 
-	[xmin xmax] 
-	(fn [x] (max xmin (min xmax x))))
+; Helper functions
+(defn approx0 
+    "Returns true iff the value x is within epsilon of 0"
+    [x] (< (Math/abs x) epsilon))
 
 (defn clamp
-	[xmin xmax v]
-	(map (clamper xmin xmax) v))
+    "Constrains all elements in v to be between vmin and vmax"
+    [vmin vmax v] (map (fn [x] (max vmin (min vmax x))) v))
+
+; Binary operators
+(defn dot 
+    "Returns the value of dot product of the vectors v1 and v2"
+    [v1 v2] (reduce + (map * v1 v2)))
+    
+(defn add 
+    "Returns a vector that is the sum of the vectors v1 and v2"
+    [v1 v2] (map + v1 v2))
+    
+(defn sub 
+    "Returns a vector that when added to v1 gives v2"
+    [v1 v2] (map - v1 v2))
+
+(defn cross 
+    "Returns the cross product vector for the 3D vectors v1 and v2."
+    [v1 v2] 
+    [ (- (* (v1 1) (v2 2)) (* (v1 2) (v2 1)))
+      (- (* (v1 2) (v2 0)) (* (v1 0) (v2 2)))
+      (- (* (v1 0) (v2 1)) (* (v1 1) (v2 0))) ])
+
+; Scalar operators
+(defn scale 
+    "Returns the vector that is m times the vector v"
+    [m v] (map #(* m %) v))
+
+; Unary operators
+(defn norm 
+    "Returns the (Euclidean) length of the vector v"
+    [v] (Math/sqrt (dot v v)))
+
+(defn normalise 
+    "Returns a vector of unit length in the same direction as v"
+    [v] (scale (/ 1 (norm v)) v))
+
+; Determinants
+(defn det 
+    "Returns the determinant of vectors v1 v2 and v3, i.e. v1.(v2 x v3)"    
+    [v1 v2 v3] (dot v1 (cross v2 v3)))
+
+(defn invdet
+    "Returns the inverse det. of v1, v2 and v3 or nil if it is too close to 0"
+    [v1 v2 v3]
+    (let [d (det v1 v2 v3)]
+        (if (approx0 d)
+            nil
+            (/ 1.0 d))))
