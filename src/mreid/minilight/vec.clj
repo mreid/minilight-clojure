@@ -8,7 +8,7 @@
 ;; --- vec.clj ---
 ;; A simple vector package that defines functions for working with geometrical 
 ;; vectors.
-(ns vec)
+(ns mreid.minilight.vec)
 
 ; Constants
 (def origin [0 0 0])    ; Zero vector in 3D
@@ -39,9 +39,9 @@
 (defn cross 
     "Returns the cross product vector for the 3D vectors v1 and v2."
     [v1 v2] 
-    [ (- (* (v1 1) (v2 2)) (* (v1 2) (v2 1)))
-      (- (* (v1 2) (v2 0)) (* (v1 0) (v2 2)))
-      (- (* (v1 0) (v2 1)) (* (v1 1) (v2 0))) ])
+    [ (- (* (nth v1 1) (nth v2 2)) (* (nth v1 2) (nth v2 1)))
+      (- (* (nth v1 2) (nth v2 0)) (* (nth v1 0) (nth v2 2)))
+      (- (* (nth v1 0) (nth v2 1)) (* (nth v1 1) (nth v2 0))) ])
 
 ; Scalar operators
 (defn scale 
