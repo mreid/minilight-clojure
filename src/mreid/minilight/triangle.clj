@@ -5,7 +5,7 @@
 ;; <http://www.hxa7241.org/>
 ;; ----------------------------------------------------------------------------
  
-;; --- src/name/reid/mark/minilight/triangle.clj ---
+;; --- src/mreid/minilight/triangle.clj ---
 ;; A structure and functions for defining and querying triangles.
 (ns mreid.minilight.triangle
   (:use mreid.minilight.vec))
@@ -40,30 +40,6 @@
   "Returns the are of the given triangle t"
   [t] (/ (norm (normal t)) 2))
 
-;(defn read-triangle [string] (map read-vec (re-seq #"\(.*?\)" string)))
-; 
-;(defn create
-;  "Creates a new triangle from a string of 5 3-tuples.
-;  The first three are vertex vectors, the fourth the reflectivity vector
-;  and the last the emitivity vector."
-;  
-;  [string]
-;  (let [  [v0 v1 v2 reflect emit] (read-triangle string) 
-;      edge0  (sub v1 v0)
-;      edge1  (sub v2 v1)
-;      edge3  (sub v2 v0)
-;      tangent  (normalise edge0)
-;      normal  (normalise (cross tangent edge1))
-;      pa2    (cross edge0 edge1)
-;      area  (/ (norm pa2) 2) ]
-;      
-;    (struct triangle
-;      [v0 v1 v2] edge0 edge3
-;      (clamp 0 (- 1 Float/MIN_VALUE) reflect) 
-;      (clamp 0 Float/MAX_VALUE emit)
-;      tangent normal area)))
- 
-; FIXME: This could be more efficient by only looping through vertices once.
 (def TOLERANCE (/ 1.0 1024.0))
 (defn tweak
   "Returns a function that adds or subtracts a small amount"

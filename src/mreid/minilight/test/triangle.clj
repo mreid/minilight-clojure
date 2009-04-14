@@ -1,6 +1,7 @@
-;; --- src/name/reid/mark/minilight/test/triangle.clj ---
+;; --- src/mreid/minilight/test/triangle.clj ---
 ;; Tests for triangle.clj using the test-is library.
 (ns mreid.minilight.test.triangle
+  (:use mreid.minilight.vec)
   (:use mreid.minilight.triangle)
   (:use clojure.contrib.test-is))
 
@@ -54,5 +55,37 @@
   (is (= 0.5 (area xytriangle)))
   (is (= 1   (area y2ztriangle))))
 
-(deftest test-intersect)
+(def tweak+0 (* 1 TOLERANCE))
+(def tweak-0 (* -1 TOLERANCE))
+(def tweak+1 (+ 1 (* 2 TOLERANCE)))
+(def tweak-1 (- 1 (* 2 TOLERANCE)))
+(def tweak+2 (+ 2 (* 3 TOLERANCE)))
+(def tweak-2 (- 2 (* 3 TOLERANCE)))
+
+(deftest test-tweak
+  (is (= tweak+0 ((tweak +) 0)))
+  (is (= tweak-0 ((tweak -) 0)))
+  (is (= tweak+1 ((tweak +) 1)))
+  (is (= tweak-1 ((tweak -) 1)))
+  (is (= tweak+2 ((tweak +) 2)))
+  (is (= tweak-2 ((tweak -) 2))))
+
+(deftest test-bounding-box
+  (is (= [[tweak-0 tweak-0 tweak-0] [tweak+0 tweak+2 tweak+1]] 
+         (bounding-box y2ztriangle))))
+
+(deftest test-intersect
   (is (= 1 (intersect xytriangle [0 0 1] [0 0 -1])))
+  (is (= 2 (intersect xytriangle [0 0 2] [0 0 -1])))
+  (is (= 1 (intersect xytriangle [0.9 0 1] [0 0 -1]))))
+
+(deftest test-no-intersect
+  (is (nil? (intersect xytriangle [0 0 1] [0 0 1]))) ; Dir. is opposite
+  (is (nil? (intersect xytriangle [0 0 1] [1 0 0]))) ; Dir. is parallel
+  (is (nil? (intersect xytriangle [0 0 2] [0 1 -1])))) ; Goes wide
+
+(deftest test-sample-point
+  (is (= 1 (intersect 
+              xytriangle 
+              (add (sample-point xytriangle) [0 0 1])
+              [0 0 -1]))))
