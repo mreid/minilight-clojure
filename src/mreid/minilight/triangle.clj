@@ -74,12 +74,11 @@
               (let [a (* (dot e02 q) invdet)]
                 (if (>= a 0) a)))))))))
  
-(def rnd (java.util.Random.))
 (defn sample-point
   "Returns a random point as a vector from inside the given triangle t"
   [t]
-  (let [ sqr1 (Math/sqrt (.nextFloat rnd))
-         r2   (.nextFloat rnd)
+  (let [ sqr1 (Math/sqrt (rand))
+         r2   (rand)
          a    (- 1 sqr1)
          b    (* (- 1 r2) sqr1) ]
     (add (vertex t 0)
