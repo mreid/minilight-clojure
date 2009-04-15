@@ -60,17 +60,18 @@
   is contained within t, or nil if there is no such a."
   [t r0 rd]
   (let [ e01    (edge t 0 1)
-         e20    (edge t 2 0)
-         invdet (invdet e01 rd e20) ]
+         e02    (edge t 0 2)
+         p      (cross rd e02)
+         invdet (invdet e01 rd e02) ]
     (if (number? invdet)
       (let [ v0 (vertex t 0)
              tv (sub r0 v0)
-             u  (* (dot v0 tv) invdet) ]
+             u  (* (dot tv p) invdet) ]
         (if (and (>= u 0) (<= u 1))
           (let [ q (cross tv e01)
                  v (* (dot rd q) invdet) ]
             (if (and (>= v 0) (<= (+ u v) 1))
-              (let [a (* (dot e20 q) invdet)]
+              (let [a (* (dot e02 q) invdet)]
                 (if (>= a 0) a)))))))))
  
 (def rnd (java.util.Random.))
@@ -83,4 +84,4 @@
          b    (* (- 1 r2) sqr1) ]
     (add (vertex t 0)
         (add (scale a (edge t 0 1)) 
-             (scale b (edge t 2 0))))))
+             (scale b (edge t 0 2))))))

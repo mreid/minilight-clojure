@@ -14,9 +14,16 @@
 
 (def y2ztriangle
   (struct triangle 
-     [ [0 0 0] [0 2 0] [0 0 1] ] ; Triangle in xy-plane
+     [ [0 0 0] [0 2 0] [0 0 1] ] ; Triangle in yz-plane
      [0.5 0.5 0.5]               ; Reflectivity
      [1 1 1]                     ; Emitivity 
+  ))
+
+(def zxtriangle
+  (struct triangle 
+     [ [-10 5 -10] [-9 5 -10] [-10 5 -9] ] ; Triangle parallel to zx-plane
+     [0.5 0.5 0.5]                         ; Reflectivity
+     [1 1 1]                               ; Emitivity 
   ))
 
 (deftest test-vertex
@@ -77,15 +84,24 @@
 (deftest test-intersect
   (is (= 1 (intersect xytriangle [0 0 1] [0 0 -1])))
   (is (= 2 (intersect xytriangle [0 0 2] [0 0 -1])))
-  (is (= 1 (intersect xytriangle [0.9 0 1] [0 0 -1]))))
+  (is (= 1 (intersect xytriangle [0.9 0 1] [0 0 -1])))
+  (is (= 1 (intersect xytriangle [0.1 0.1 -1] [0 0 1]))))
 
 (deftest test-no-intersect
   (is (nil? (intersect xytriangle [0 0 1] [0 0 1]))) ; Dir. is opposite
-  (is (nil? (intersect xytriangle [0 0 1] [1 0 0]))) ; Dir. is parallel
+  (is (nil? (intersect xytriangle [0 0 1.1] [1 0 0]))) ; Dir. is parallel
   (is (nil? (intersect xytriangle [0 0 2] [0 1 -1])))) ; Goes wide
 
+(defn random-ray
+  "Returns [r0 rd] where rd is the unit normal of the triangle t and r0 is a 
+   random point on t translated by -rd" 
+  [t]
+  (let [ray-direction (unit-normal t)]
+    [ (sub (sample-point t) ray-direction) 
+      ray-direction ]))
+
 (deftest test-sample-point
-  (is (= 1 (intersect 
-              xytriangle 
-              (add (sample-point xytriangle) [0 0 1])
-              [0 0 -1]))))
+  (let [xy-random-ray (random-ray xytriangle)
+        zx-random-ray (random-ray zxtriangle)]
+    (is (= 1 (apply intersect xytriangle xy-random-ray)))
+    (is (= 1 (apply intersect zxtriangle zx-random-ray)))))
